@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
-import { useFrame } from '@react-three/fiber';
 import { useAnatomyStore } from '@/store/anatomyStore';
 
 const DRACO_DECODER_PATH = 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/';
@@ -117,15 +116,6 @@ export const VisceralOrgans3D: React.FC = () => {
   const isIsolateMode = useAnatomyStore((s) => s.isIsolateMode);
 
   const [loadedGroups, setLoadedGroups] = useState<{ spec: OrganModelSpec; scene: THREE.Group }[]>([]);
-  const heartGroupRef = useRef<THREE.Group | null>(null);
-
-  // Subtle systolic contraction on the real 3D heart (~2% scale oscillation)
-  useFrame((state) => {
-    if (heartGroupRef.current) {
-      const beat = 1 + Math.sin(state.clock.elapsedTime * 4.2) * 0.02;
-      heartGroupRef.current.scale.set(beat, beat, beat);
-    }
-  });
 
   // Load all organ GLBs once
   useEffect(() => {
@@ -281,7 +271,6 @@ export const VisceralOrgans3D: React.FC = () => {
         <primitive
           key={spec.id}
           object={scene}
-          ref={spec.id === 'heart' ? heartGroupRef : undefined}
           onClick={(e: any) => {
             e.stopPropagation();
             const worldPos = new THREE.Vector3();
