@@ -178,14 +178,18 @@ export const RealAnatomyModel: React.FC = () => {
       if (!original) return;
 
       const isMuscle = Boolean(mesh.userData.isMuscle);
-
-      // Layer visibility
-      if (isMuscle  && !systemVisibility.muscular) { mesh.visible = false; return; }
-      if (!isMuscle && !systemVisibility.skeletal) { mesh.visible = false; return; }
-      mesh.visible = true;
-
       const isSelected = selectedId === mesh.uuid || selectedId === mesh.name;
       const isDimmed   = isIsolateMode && selectedId !== null && !isSelected;
+
+      // Layer visibility & Isolate mode
+      if (isIsolateMode && selectedId !== null) {
+        mesh.visible = isSelected;
+        if (!isSelected) return;
+      } else {
+        if (isMuscle  && !systemVisibility.muscular) { mesh.visible = false; return; }
+        if (!isMuscle && !systemVisibility.skeletal) { mesh.visible = false; return; }
+        mesh.visible = true;
+      }
 
       let mat: THREE.Material;
 
@@ -281,10 +285,13 @@ export const RealAnatomyModel: React.FC = () => {
             e.stopPropagation();
             const clickedMesh = e.object as THREE.Mesh;
             const meshName = clickedMesh.name || '';
-            const worldPos = new THREE.Vector3();
-            clickedMesh.getWorldPosition(worldPos);
-            const fallbackId = clickedMesh.userData.isMuscle ? 'muscular_tissue' : 'skeleton';
-            selectStructure(fallbackId, [worldPos.x, worldPos.y, worldPos.z], meshName);
+            const box = new THREE.Box3().setFromObject(clickedMesh);
+            const center = box.getCenter(new THREE.Vector3());
+            const clickPos: [number, number, number] = e.point
+              ? [e.point.x, e.point.y, e.point.z]
+              : [center.x, center.y, center.z];
+            const structureId = meshName || clickedMesh.uuid;
+            selectStructure(structureId, clickPos, meshName || structureId);
           }}
           onPointerOver={(e: any) => {
             e.stopPropagation();

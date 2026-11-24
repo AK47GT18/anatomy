@@ -152,6 +152,13 @@ export const VisceralOrgans3D: React.FC = () => {
       const isHovered  = hoveredId  === spec.id;
       const isDimmed   = isIsolateMode && selectedId !== null && !isSelected;
 
+      if (isIsolateMode && selectedId !== null) {
+        scene.visible = isSelected;
+        if (!isSelected) return;
+      } else {
+        scene.visible = true;
+      }
+
       scene.traverse((child) => {
         if (!(child as THREE.Mesh).isMesh) return;
         const mesh = child as THREE.Mesh;
@@ -209,7 +216,10 @@ export const VisceralOrgans3D: React.FC = () => {
             e.stopPropagation();
             const wp = new THREE.Vector3();
             scene.getWorldPosition(wp);
-            selectStructure(spec.id, [wp.x, wp.y, wp.z]);
+            const clickPos: [number, number, number] = e.point
+              ? [e.point.x, e.point.y, e.point.z]
+              : [wp.x, wp.y, wp.z];
+            selectStructure(spec.id, clickPos);
           }}
           onPointerOver={(e: any) => {
             e.stopPropagation();

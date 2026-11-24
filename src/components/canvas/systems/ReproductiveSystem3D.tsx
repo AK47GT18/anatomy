@@ -69,6 +69,13 @@ export const ReproductiveSystem3D: React.FC = () => {
     const isDimmed    = isIsolateMode && selectedId !== null && !isSelected;
     const baseColor   = isMale ? '#93c5fd' : '#f472b6';
 
+    if (isIsolateMode && selectedId !== null) {
+      activeScene.visible = isSelected;
+      if (!isSelected) return;
+    } else {
+      activeScene.visible = true;
+    }
+
     activeScene.traverse((child) => {
       if (!(child as THREE.Mesh).isMesh) return;
       const mesh = child as THREE.Mesh;
@@ -103,7 +110,10 @@ export const ReproductiveSystem3D: React.FC = () => {
         e.stopPropagation();
         const wp = new THREE.Vector3();
         activeScene.getWorldPosition(wp);
-        selectStructure(currentId, [wp.x, wp.y, wp.z]);
+        const clickPos: [number, number, number] = e.point
+          ? [e.point.x, e.point.y, e.point.z]
+          : [wp.x, wp.y, wp.z];
+        selectStructure(currentId, clickPos);
       }}
       onPointerOver={(e: any) => { e.stopPropagation(); hoverStructure(currentId); document.body.style.cursor = 'pointer'; }}
       onPointerOut={() => { hoverStructure(null); document.body.style.cursor = 'auto'; }}

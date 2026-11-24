@@ -46,7 +46,7 @@ interface AnatomyState {
   toggleInspector: (open?: boolean) => void;
   toggleSystemVisibility: (system: AnatomicalSystem) => void;
   setActiveModel: (model: 'body' | 'skeleton') => void;
-  focusRegion: (region: 'head' | 'thorax' | 'abdomen' | 'pelvis' | 'full') => void;
+  focusRegion: (region: 'head' | 'thorax' | 'abdomen' | 'pelvis' | 'legs' | 'arms' | 'full') => void;
   resetCamera: () => void;
 }
 
@@ -302,6 +302,12 @@ export const useAnatomyStore = create<AnatomyState>((set, get) => ({
         break;
       case 'pelvis':
         set({ cameraFocusTarget: [0, -0.65, 0], cameraFocusDistance: 1.8, showInspector: false });
+        break;
+      case 'legs':
+        set({ cameraFocusTarget: [0, -1.05, 0], cameraFocusDistance: 2.2, showInspector: false });
+        break;
+      case 'arms':
+        set({ cameraFocusTarget: [0, 0.35, 0], cameraFocusDistance: 2.0, showInspector: false });
         break;
       case 'full':
       default:

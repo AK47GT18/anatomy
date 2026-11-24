@@ -35,7 +35,7 @@ export const CirculatorySystem3D: React.FC = () => {
       const container = new THREE.Group();
       container.add(root);
       container.scale.setScalar(scale);
-      container.position.set(0, -0.2, 0);
+      container.position.set(0, -0.41, 0.015);
 
       root.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
@@ -60,6 +60,13 @@ export const CirculatorySystem3D: React.FC = () => {
       const isSelected = selectedId === mesh.name || selectedId === 'circulatory';
       const isHovered  = hoveredId  === mesh.name;
       const isDimmed   = isIsolateMode && selectedId !== null && !isSelected;
+
+      if (isIsolateMode && selectedId !== null) {
+        mesh.visible = isSelected;
+        if (!isSelected) return;
+      } else {
+        mesh.visible = true;
+      }
 
       if (viewMode === 'wireframe') {
         mesh.material = new THREE.MeshBasicMaterial({
@@ -111,9 +118,12 @@ export const CirculatorySystem3D: React.FC = () => {
       onClick={(e: any) => {
         e.stopPropagation();
         const mesh = e.object as THREE.Mesh;
-        const wp   = new THREE.Vector3();
-        mesh.getWorldPosition(wp);
-        selectStructure('circulatory', [wp.x, wp.y, wp.z], mesh.name || 'Blood Vessel');
+        const box = new THREE.Box3().setFromObject(mesh);
+        const center = box.getCenter(new THREE.Vector3());
+        const clickPos: [number, number, number] = e.point
+          ? [e.point.x, e.point.y, e.point.z]
+          : [center.x, center.y, center.z];
+        selectStructure('circulatory', clickPos, mesh.name || 'Blood Vessel');
       }}
       onPointerOver={(e: any) => {
         e.stopPropagation();

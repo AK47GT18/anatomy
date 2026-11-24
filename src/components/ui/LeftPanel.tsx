@@ -216,6 +216,18 @@ export const LeftPanel: React.FC = () => {
             >
               Pelvis & Genitalia
             </button>
+            <button
+              onClick={() => { focusRegion('legs'); setIsOpenMobile(false); }}
+              className="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200/80 text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-left transition-colors font-medium text-sky-700"
+            >
+              Legs & Feet
+            </button>
+            <button
+              onClick={() => { focusRegion('arms'); setIsOpenMobile(false); }}
+              className="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200/80 text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-left transition-colors"
+            >
+              Arms & Hands
+            </button>
           </div>
         </div>
 

@@ -120,6 +120,12 @@ export const NervousSystemComplete3D: React.FC = () => {
     const isSpineHov  = hoveredId === 'spinal_cord';
 
     const applyMat = (scene: THREE.Group, isSel: boolean, isHov: boolean, col: string) => {
+      if (isIsolateMode && selectedId !== null) {
+        scene.visible = isSel;
+        if (!isSel) return;
+      } else {
+        scene.visible = true;
+      }
       const isDimmed = isIsolateMode && selectedId !== null && !isSel;
       scene.traverse((child) => {
         if (!(child as THREE.Mesh).isMesh) return;
@@ -144,6 +150,14 @@ export const NervousSystemComplete3D: React.FC = () => {
     if (spinalScene) applyMat(spinalScene, isSpineSel, isSpineHov, '#facc15');
 
     if (nervesScene) {
+      const isNervesSel = selectedId === 'spinal_cord' || (selectedId?.toLowerCase().includes('nerve') ?? false);
+      if (isIsolateMode && selectedId !== null) {
+        nervesScene.visible = isNervesSel;
+        if (!isNervesSel) return;
+      } else {
+        nervesScene.visible = true;
+      }
+
       nervesScene.traverse((child) => {
         if (!(child as THREE.Mesh).isMesh) return;
         const mesh = child as THREE.Mesh;
@@ -192,7 +206,10 @@ export const NervousSystemComplete3D: React.FC = () => {
             const mesh = e.object as THREE.Mesh;
             const wp   = new THREE.Vector3();
             mesh.getWorldPosition(wp);
-            selectStructure('spinal_cord', [wp.x, wp.y, wp.z], mesh?.name || 'Peripheral Nerve');
+            const clickPos: [number, number, number] = e.point
+              ? [e.point.x, e.point.y, e.point.z]
+              : [wp.x, wp.y, wp.z];
+            selectStructure('spinal_cord', clickPos, mesh?.name || 'Peripheral Nerve');
           }}
           onPointerOver={(e: any) => {
             e.stopPropagation();
