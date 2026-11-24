@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { LeftPanel } from '@/components/ui/LeftPanel';
 import { RightPanel } from '@/components/ui/RightPanel';
 import { BottomToolbar } from '@/components/ui/BottomToolbar';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 const AnatomyCanvas = dynamic(
   () => import('@/components/canvas/AnatomyCanvas').then((m) => m.AnatomyCanvas),
@@ -35,6 +36,8 @@ const AnatomyCanvas = dynamic(
 );
 
 export default function AnatomyPage() {
+  useKeyboardShortcuts();
+
   return (
     <main className="relative w-screen h-[100dvh] overflow-hidden bg-[#f4f6f8]">
       {/* Full-bleed WebGL canvas */}
