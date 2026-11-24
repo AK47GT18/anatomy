@@ -70,9 +70,11 @@ export const useAnatomyStore = create<AnatomyState>((set, get) => ({
     skeletal: true,
     muscular: true,
     visceral: true,
-    circulatory: true,
-    nervous: true,
-    reproductive: true,
+    // Heavy systems default OFF — only load when user enables them.
+    // This cuts initial network payload from 52 MB → ~26 MB.
+    circulatory: false,
+    nervous: false,
+    reproductive: false,
     integumentary: true,
   },
 

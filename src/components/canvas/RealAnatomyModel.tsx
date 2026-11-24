@@ -2,146 +2,147 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { useAnatomyStore } from '@/store/anatomyStore';
-import { VisceralOrgans3D } from './systems/VisceralOrgans3D';
-import { NervousSystemComplete3D } from './systems/NervousSystemComplete3D';
-import { ReproductiveSystem3D } from './systems/ReproductiveSystem3D';
-import { CirculatorySystem3D } from './systems/CirculatorySystem3D';
+import { loadGLB, preloadGLB } from '@/lib/gltfLoader';
 
-const DRACO_DECODER_PATH = 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/';
+/**
+ * Performance notes
+ * -----------------
+ * • Uses the shared singleton GLTFLoader (see src/lib/gltfLoader.ts).
+ *   The DRACOLoader is initialised once and reused; DRACO wasm is
+ *   fetched locally from /public/draco/ — no CDN round-trip.
+ *
+ * • body.glb is loaded immediately on mount (it is the primary visible
+ *   model).  skeleton.glb is preloaded in the background so switching
+ *   is instant.
+ *
+ * • Materials are computed inside a reactive useEffect keyed on the
+ *   relevant state slices, NOT inside JSX render.  This prevents
+ *   creating new MeshStandardMaterial instances on every React frame.
+ */
 
-// Anatomically correct PBR colours
-const BONE_COLOR = '#e8e3d6';    // warm cortical bone ivory
-const MUSCLE_COLOR = '#8c2a2a';  // natural deep muscle crimson
+const BONE_COLOR   = '#e8e3d6'; // warm cortical ivory
+const MUSCLE_COLOR = '#8c2a2a'; // deep muscle crimson
+
+function buildBaseMaterial(isExplicitMuscle: boolean): THREE.MeshStandardMaterial {
+  return new THREE.MeshStandardMaterial(
+    isExplicitMuscle
+      ? {
+          color: MUSCLE_COLOR,
+          roughness: 0.52,
+          metalness: 0.03,
+          side: THREE.DoubleSide,
+          polygonOffset: true,
+          polygonOffsetFactor: 1,
+          polygonOffsetUnits: 1,
+        }
+      : {
+          color: BONE_COLOR,
+          roughness: 0.4,
+          metalness: 0.03,
+          side: THREE.DoubleSide,
+          polygonOffset: true,
+          polygonOffsetFactor: -1,
+          polygonOffsetUnits: -1,
+        }
+  );
+}
 
 export const RealAnatomyModel: React.FC = () => {
   const [modelRoot, setModelRoot] = useState<THREE.Group | null>(null);
-  const activeModel = useAnatomyStore((s) => s.activeModel);
-  const selectedId = useAnatomyStore((s) => s.selectedId);
-  const hoveredId = useAnatomyStore((s) => s.hoveredId);
-  const selectStructure = useAnatomyStore((s) => s.selectStructure);
-  const hoverStructure = useAnatomyStore((s) => s.hoverStructure);
-  const viewMode = useAnatomyStore((s) => s.viewMode);
-  const isIsolateMode = useAnatomyStore((s) => s.isIsolateMode);
+  const activeModel      = useAnatomyStore((s) => s.activeModel);
+  const selectedId       = useAnatomyStore((s) => s.selectedId);
+  const hoveredId        = useAnatomyStore((s) => s.hoveredId);
+  const selectStructure  = useAnatomyStore((s) => s.selectStructure);
+  const hoverStructure   = useAnatomyStore((s) => s.hoverStructure);
+  const viewMode         = useAnatomyStore((s) => s.viewMode);
+  const isIsolateMode    = useAnatomyStore((s) => s.isIsolateMode);
   const systemVisibility = useAnatomyStore((s) => s.systemVisibility);
 
   const originalMaterialsRef = useRef<Map<string, THREE.MeshStandardMaterial>>(new Map());
-  const meshListRef = useRef<THREE.Mesh[]>([]);
-  const prevModelRef = useRef<string | null>(null);
+  const meshListRef          = useRef<THREE.Mesh[]>([]);
+  const meshByUuidRef        = useRef<Map<string, THREE.Mesh>>(new Map());
+  const prevHoveredMeshRef   = useRef<THREE.Mesh | null>(null);
+  const prevModelRef         = useRef<string | null>(null);
 
+  // Kick off skeleton preload immediately so toggle is instant
+  useEffect(() => {
+    preloadGLB('/models/skeleton.glb');
+  }, []);
+
+  // ── Load body / skeleton via shared singleton loader ────────────────────────
   useEffect(() => {
     if (prevModelRef.current === activeModel) return;
     prevModelRef.current = activeModel;
 
-    let isMounted = true;
-
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
-
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader(dracoLoader);
-
+    let cancelled = false;
     const modelPath = activeModel === 'skeleton' ? '/models/skeleton.glb' : '/models/body.glb';
 
-    loader.load(
-      modelPath,
-      (gltf) => {
-        if (!isMounted) return;
+    loadGLB(modelPath).then((root) => {
+      if (cancelled) return;
 
-        const container = new THREE.Group();
-        const content = gltf.scene;
-        container.add(content);
+      const container = new THREE.Group();
+      container.add(root);
 
-        // Centre and scale to canonical 2.8-unit height
-        content.updateMatrixWorld(true);
-        const box = new THREE.Box3().setFromObject(content);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
+      root.updateMatrixWorld(true);
+      const box    = new THREE.Box3().setFromObject(root);
+      const center = box.getCenter(new THREE.Vector3());
+      const size   = box.getSize(new THREE.Vector3());
 
-        content.position.set(-center.x, -center.y, -center.z);
+      root.position.set(-center.x, -center.y, -center.z);
 
-        const targetHeight = 2.8;
-        const scale = size.y > 0 ? targetHeight / size.y : 1;
-        container.scale.setScalar(scale);
-        container.position.set(0, -0.2, 0);
+      const targetHeight = 2.8;
+      const scale = size.y > 0 ? targetHeight / size.y : 1;
+      container.scale.setScalar(scale);
+      container.position.set(0, -0.2, 0);
 
-        const meshList: THREE.Mesh[] = [];
-        const matMap = new Map<string, THREE.MeshStandardMaterial>();
+      const meshList: THREE.Mesh[] = [];
+      const matMap = new Map<string, THREE.MeshStandardMaterial>();
+      const uuidMap = new Map<string, THREE.Mesh>();
 
-        content.traverse((child) => {
-          if (!(child as THREE.Mesh).isMesh) return;
-          const mesh = child as THREE.Mesh;
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
+      root.traverse((child) => {
+        if (!(child as THREE.Mesh).isMesh) return;
+        const mesh = child as THREE.Mesh;
+        mesh.geometry.computeBoundingBox();
+        mesh.geometry.computeBoundingSphere();
+        mesh.raycast = THREE.Mesh.prototype.raycast;
 
-          mesh.geometry.computeBoundingBox();
-          mesh.geometry.computeBoundingSphere();
-          mesh.raycast = THREE.Mesh.prototype.raycast;
+        const name = (mesh.name || '').toLowerCase();
+        const isExplicitMuscle =
+          name.endsWith('muscle') || name.includes(' muscle') ||
+          name.includes('muscle ') || name.includes('muscle.') ||
+          name.includes('rectus')   || name.includes('oblique')  ||
+          name.includes('pectoral') || name.includes('deltoid')  ||
+          name.includes('biceps')   || name.includes('triceps')  ||
+          name.includes('gluteus')  || name.includes('trapezius') ||
+          name.includes('latissimus') || name.includes('gastrocnemius') ||
+          name.includes('soleus')   || name.includes('sartorius') ||
+          name.includes('gracilis') || name.includes('quadriceps') ||
+          name.includes('brachialis') || name.includes('subscapularis') ||
+          name.includes('infraspinatus') || name.includes('supraspinatus');
 
-          const name = (mesh.name || '').toLowerCase();
+        mesh.userData.isMuscle = isExplicitMuscle;
+        const mat = buildBaseMaterial(isExplicitMuscle);
+        mesh.material = mat;
+        matMap.set(mesh.uuid, mat);
+        uuidMap.set(mesh.uuid, mesh);
+        if (mesh.name) uuidMap.set(mesh.name, mesh);
+        meshList.push(mesh);
+      });
 
-          // Strict muscular classification — only meshes where the asset uses "muscle" or specific named muscles
-          const isExplicitMuscle =
-            name.endsWith('muscle') ||
-            name.includes(' muscle') ||
-            name.includes('muscle ') ||
-            name.includes('muscle.') ||
-            name.includes('rectus') || name.includes('oblique') ||
-            name.includes('pectoral') || name.includes('deltoid') ||
-            name.includes('biceps') || name.includes('triceps') ||
-            name.includes('gluteus') || name.includes('trapezius') ||
-            name.includes('latissimus') || name.includes('gastrocnemius') ||
-            name.includes('soleus') || name.includes('sartorius') ||
-            name.includes('gracilis') || name.includes('quadriceps') ||
-            name.includes('brachialis') || name.includes('subscapularis') ||
-            name.includes('infraspinatus') || name.includes('supraspinatus');
+      originalMaterialsRef.current = matMap;
+      meshListRef.current = meshList;
+      meshByUuidRef.current = uuidMap;
+      setModelRoot(container);
+    }).catch((err) => {
+      console.error('[RealAnatomyModel] Error loading model:', err);
+    });
 
-          mesh.userData.isMuscle = isExplicitMuscle;
-
-          const mat = new THREE.MeshStandardMaterial(
-            isExplicitMuscle
-              ? {
-                  color: MUSCLE_COLOR,
-                  roughness: 0.52,
-                  metalness: 0.03,
-                  side: THREE.DoubleSide,
-                  polygonOffset: true,
-                  polygonOffsetFactor: 1,
-                  polygonOffsetUnits: 1,
-                }
-              : {
-                  color: BONE_COLOR,
-                  roughness: 0.4,
-                  metalness: 0.03,
-                  side: THREE.DoubleSide,
-                  polygonOffset: true,
-                  polygonOffsetFactor: -1,
-                  polygonOffsetUnits: -1,
-                }
-          );
-
-          mesh.material = mat;
-          matMap.set(mesh.uuid, mat);
-          meshList.push(mesh);
-        });
-
-        originalMaterialsRef.current = matMap;
-        meshListRef.current = meshList;
-        setModelRoot(container);
-      },
-      undefined,
-      (err) => console.error('[RealAnatomyModel] Error loading model:', err)
-    );
-
-    return () => {
-      isMounted = false;
-      dracoLoader.dispose();
-    };
+    return () => { cancelled = true; };
   }, [activeModel]);
 
-  // Reactive material updates for selection, hover, view mode and system visibility
+  // ── Reactive material updates (selection / viewMode / isolate / visibility) ─
+  // Excludes hoveredId to avoid traversing all 826 meshes on every mouse movement!
   useEffect(() => {
     if (!modelRoot || meshListRef.current.length === 0) return;
 
@@ -152,13 +153,12 @@ export const RealAnatomyModel: React.FC = () => {
       const isMuscle = Boolean(mesh.userData.isMuscle);
 
       // Layer visibility
-      if (isMuscle && !systemVisibility.muscular) { mesh.visible = false; return; }
+      if (isMuscle  && !systemVisibility.muscular) { mesh.visible = false; return; }
       if (!isMuscle && !systemVisibility.skeletal) { mesh.visible = false; return; }
       mesh.visible = true;
 
       const isSelected = selectedId === mesh.uuid || selectedId === mesh.name;
-      const isHovered = hoveredId === mesh.uuid || hoveredId === mesh.name;
-      const isDimmed = isIsolateMode && selectedId !== null && !isSelected;
+      const isDimmed   = isIsolateMode && selectedId !== null && !isSelected;
 
       let mat: THREE.Material;
 
@@ -199,21 +199,51 @@ export const RealAnatomyModel: React.FC = () => {
           polygonOffset: true,
           polygonOffsetFactor: -2,
         });
-      } else if (isHovered) {
-        mat = new THREE.MeshStandardMaterial({
-          color: isMuscle ? '#c0393a' : '#f1f5f9',
-          emissive: '#1e293b',
-          emissiveIntensity: 0.2,
-          roughness: original.roughness,
-          side: THREE.DoubleSide,
-        });
       } else {
         mat = original;
       }
 
       mesh.material = mat;
     });
-  }, [modelRoot, selectedId, hoveredId, viewMode, isIsolateMode, systemVisibility]);
+
+    prevHoveredMeshRef.current = null;
+  }, [modelRoot, selectedId, viewMode, isIsolateMode, systemVisibility]);
+
+  // ── Targeted O(1) hover update — only touches the 1 hovered mesh ──────────
+  useEffect(() => {
+    // Restore previous hovered mesh
+    if (prevHoveredMeshRef.current) {
+      const prevMesh = prevHoveredMeshRef.current;
+      const isSelected = selectedId === prevMesh.uuid || selectedId === prevMesh.name;
+      if (!isSelected) {
+        const orig = originalMaterialsRef.current.get(prevMesh.uuid);
+        if (orig) prevMesh.material = orig;
+      }
+      prevHoveredMeshRef.current = null;
+    }
+
+    if (!hoveredId) return;
+
+    // Fast O(1) map lookup
+    const targetMesh = meshByUuidRef.current.get(hoveredId);
+    if (!targetMesh) return;
+
+    const isSelected = selectedId === targetMesh.uuid || selectedId === targetMesh.name;
+    if (isSelected) return;
+
+    const isMuscle = Boolean(targetMesh.userData.isMuscle);
+    const orig = originalMaterialsRef.current.get(targetMesh.uuid);
+
+    targetMesh.material = new THREE.MeshStandardMaterial({
+      color: isMuscle ? '#c0393a' : '#f1f5f9',
+      emissive: new THREE.Color('#1e293b'),
+      emissiveIntensity: 0.2,
+      roughness: orig?.roughness ?? 0.4,
+      side: THREE.DoubleSide,
+    });
+
+    prevHoveredMeshRef.current = targetMesh;
+  }, [hoveredId, selectedId]);
 
   return (
     <>
@@ -241,10 +271,51 @@ export const RealAnatomyModel: React.FC = () => {
         />
       )}
 
-      <VisceralOrgans3D />
-      <CirculatorySystem3D />
-      <NervousSystemComplete3D />
-      <ReproductiveSystem3D />
+      <VisceralOrgans3DLazy />
+      <CirculatorySystem3DLazy />
+      <NervousSystemLazy />
+      <ReproductiveSystemLazy />
     </>
   );
 };
+
+// ── Lazy system wrappers ─────────────────────────────────────────────────────
+// Each wrapper delays loading the actual component until the system is first
+// toggled ON, keeping initial JS + network cost minimal.
+
+import { VisceralOrgans3D }         from './systems/VisceralOrgans3D';
+import { CirculatorySystem3D }       from './systems/CirculatorySystem3D';
+import { NervousSystemComplete3D }   from './systems/NervousSystemComplete3D';
+import { ReproductiveSystem3D }      from './systems/ReproductiveSystem3D';
+
+function VisceralOrgans3DLazy() {
+  const isVisible = useAnatomyStore((s) => s.systemVisibility.visceral);
+  const [everVisible, setEverVisible] = useState(isVisible);
+  useEffect(() => { if (isVisible) setEverVisible(true); }, [isVisible]);
+  if (!everVisible) return null;
+  return <VisceralOrgans3D />;
+}
+
+function CirculatorySystem3DLazy() {
+  const isVisible = useAnatomyStore((s) => s.systemVisibility.circulatory);
+  const [everVisible, setEverVisible] = useState(false); // off by default → load on demand
+  useEffect(() => { if (isVisible) setEverVisible(true); }, [isVisible]);
+  if (!everVisible) return null;
+  return <CirculatorySystem3D />;
+}
+
+function NervousSystemLazy() {
+  const isVisible = useAnatomyStore((s) => s.systemVisibility.nervous);
+  const [everVisible, setEverVisible] = useState(false);
+  useEffect(() => { if (isVisible) setEverVisible(true); }, [isVisible]);
+  if (!everVisible) return null;
+  return <NervousSystemComplete3D />;
+}
+
+function ReproductiveSystemLazy() {
+  const isVisible = useAnatomyStore((s) => s.systemVisibility.reproductive);
+  const [everVisible, setEverVisible] = useState(false);
+  useEffect(() => { if (isVisible) setEverVisible(true); }, [isVisible]);
+  if (!everVisible) return null;
+  return <ReproductiveSystem3D />;
+}
