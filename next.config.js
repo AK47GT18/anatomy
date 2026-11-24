@@ -8,18 +8,17 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // GLB models — content-addressed, safe to cache for 1 year
         source: '/models/:file*',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-          { key: 'Content-Encoding', value: 'identity' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
         ],
       },
       {
-        // DRACO decoder — also versioned, cache for 1 year
         source: '/draco/:file*',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
         ],
       },
     ];
