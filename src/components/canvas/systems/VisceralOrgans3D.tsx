@@ -28,32 +28,38 @@ interface OrganModelSpec {
 const VISCERAL_SPECS: OrganModelSpec[] = [
   {
     id: 'heart', name: 'Heart', url: '/models/heart.glb',
-    position: [0.015, 0.50, 0.055], targetSize: 0.17,
+    // Mediastinum: posterior to body of sternum (0.529), between 2nd & 5th ribs
+    position: [0.015, 0.46, 0.05], targetSize: 0.16,
     rotation: [0, 0, -0.05], baseColor: '#b91c1c', roughness: 0.25,
   },
   {
     id: 'lungs', name: 'Lungs', url: '/models/lungs.glb',
-    position: [0, 0.51, 0.02], targetSize: 0.44,
+    // Bilateral thoracic cavities: apex at 1st rib (0.68), base at diaphragm (0.27)
+    position: [0, 0.47, 0.01], targetSize: 0.41,
     baseColor: '#fda4af', roughness: 0.4,
   },
   {
     id: 'liver', name: 'Liver', url: '/models/liver.glb',
-    position: [0.07, 0.21, 0.055], targetSize: 0.22,
+    // Right hypochondrium: immediately inferior to right hemidiaphragm
+    position: [0.065, 0.22, 0.045], targetSize: 0.21,
     baseColor: '#854d0e', roughness: 0.3,
   },
   {
     id: 'stomach', name: 'Stomach', url: '/models/stomach.glb',
-    position: [-0.05, 0.17, 0.065], targetSize: 0.16,
+    // Left hypochondrium/epigastrium: inferior to left hemidiaphragm, anterior to pancreas
+    position: [-0.05, 0.18, 0.055], targetSize: 0.16,
     baseColor: '#ea580c', roughness: 0.32,
   },
   {
     id: 'kidneys', name: 'Kidneys', url: '/models/kidneys.glb',
-    position: [0, 0.18, -0.055], targetSize: 0.15,
+    // Retroperitoneal: T12 to L3, deeply embedded in posterior abdominal wall
+    position: [0, 0.19, -0.065], targetSize: 0.15,
     baseColor: '#991b1b', roughness: 0.35,
   },
   {
     id: 'urinary_bladder', name: 'Urinary Bladder', url: '/models/bladder.glb',
-    position: [0, -0.07, 0.07], targetSize: 0.12,
+    // True lesser pelvis: resting directly on pelvic diaphragm behind pubic symphysis
+    position: [0, -0.16, 0.05], targetSize: 0.12,
     baseColor: '#f59e0b', roughness: 0.3,
   },
 ];

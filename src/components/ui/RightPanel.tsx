@@ -30,7 +30,13 @@ export const RightPanel: React.FC = () => {
             <h2 className="text-base font-bold text-slate-800 leading-tight mt-0.5">
               {displayName}
             </h2>
-            <p className="text-xs italic text-slate-500 mt-0.5">
+            {selectedStructure.commonName && selectedStructure.commonName !== displayName && (
+              <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200/80 text-[11px] font-semibold text-sky-800">
+                <span className="text-sky-600 font-normal">Common name:</span>
+                <span>{selectedStructure.commonName}</span>
+              </div>
+            )}
+            <p className="text-xs italic text-slate-500 mt-1">
               {selectedStructure.latinName}
             </p>
           </div>

@@ -15,6 +15,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'male_genitalia',
     name: 'Male Reproductive System (Testes, Prostate & Penis)',
+    commonName: 'Male Reproductive Organs',
     latinName: 'Systema Genitale Masculinum',
     system: 'reproductive',
     subsystem: 'Pelvic Viscera & Perineum',
@@ -36,6 +37,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'female_genitalia',
     name: 'Female Reproductive System (Uterus, Ovaries & Vulva)',
+    commonName: 'Female Reproductive Organs (Womb & Ovaries)',
     latinName: 'Systema Genitale Femininum',
     system: 'reproductive',
     subsystem: 'Pelvic Viscera & Perineum',
@@ -57,6 +59,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'urinary_bladder',
     name: 'Urinary Bladder & Ureters',
+    commonName: 'Bladder',
     latinName: 'Vesica Urinaria',
     system: 'visceral',
     subsystem: 'Urinary Viscera',
@@ -79,6 +82,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'brain_cerebrum',
     name: 'Brain (Cerebrum, Cerebellum & Brainstem)',
+    commonName: 'Brain',
     latinName: 'Encephalon',
     system: 'nervous',
     subsystem: 'Central Nervous System',
@@ -100,6 +104,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'spinal_cord',
     name: 'Spinal Cord & Spinal Nerves',
+    commonName: 'Spinal Cord & Nerves',
     latinName: 'Medulla Spinalis',
     system: 'nervous',
     subsystem: 'Central Nervous System',
@@ -123,6 +128,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'heart_organ',
     name: 'Heart (Cor) & Pericardium',
+    commonName: 'Heart',
     latinName: 'Cor (Myocardium)',
     system: 'visceral',
     subsystem: 'Cardiovascular',
@@ -140,6 +146,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'lungs_viscera',
     name: 'Lungs (Right 3 Lobes & Left 2 Lobes)',
+    commonName: 'Lungs',
     latinName: 'Pulmones',
     system: 'visceral',
     subsystem: 'Respiratory System',
@@ -156,6 +163,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'liver_viscera',
     name: 'Liver (Hepar) & Gallbladder',
+    commonName: 'Liver',
     latinName: 'Hepar et Vesica Biliaris',
     system: 'visceral',
     subsystem: 'Digestive & Metabolic',
@@ -172,6 +180,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'stomach_viscera',
     name: 'Stomach & Duodenum',
+    commonName: 'Stomach',
     latinName: 'Gaster / Ventriculus',
     system: 'visceral',
     subsystem: 'Gastrointestinal',
@@ -188,6 +197,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'kidneys_viscera',
     name: 'Kidneys (Renes) & Adrenal Glands',
+    commonName: 'Kidneys',
     latinName: 'Renes et Glandulae Suprarenales',
     system: 'visceral',
     subsystem: 'Renal & Endocrine',
@@ -204,6 +214,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'intestines_viscera',
     name: 'Intestines (Small Intestine & Colon)',
+    commonName: 'Intestines (Bowels)',
     latinName: 'Intestinum Tenue et Crassum',
     system: 'visceral',
     subsystem: 'Gastrointestinal',
@@ -222,6 +233,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'hand_bones',
     name: 'Bones of Hand (Carpals, Metacarpals & Phalanges)',
+    commonName: 'Hand Bones (Fingers, Palm & Wrist)',
     latinName: 'Ossa Manus (Carpus, Metacarpus, Phalanges)',
     system: 'skeletal',
     subsystem: 'Appendicular Skeleton',
@@ -241,6 +253,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'foot_bones',
     name: 'Bones of Foot (Tarsals, Metatarsals & Phalanges)',
+    commonName: 'Foot Bones (Toes, Arch & Ankle)',
     latinName: 'Ossa Pedis (Tarsus, Metatarsus, Phalanges)',
     system: 'skeletal',
     subsystem: 'Appendicular Skeleton',
@@ -262,6 +275,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'cranium',
     name: 'Cranium (Skull Vault & Facial Skeleton)',
+    commonName: 'Skull',
     latinName: 'Cranium / Calvaria',
     system: 'skeletal',
     subsystem: 'Axial Skeleton',
@@ -279,6 +293,7 @@ export const ANATOMY_DATABASE: AnatomicalStructure[] = [
   {
     id: 'femur',
     name: 'Femur (Thigh Bone)',
+    commonName: 'Thighbone',
     latinName: 'Femur',
     system: 'skeletal',
     subsystem: 'Appendicular Skeleton',

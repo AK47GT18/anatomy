@@ -24,6 +24,45 @@ import { loadGLB, preloadGLB } from '@/lib/gltfLoader';
 const BONE_COLOR   = '#e8e3d6'; // warm cortical ivory
 const MUSCLE_COLOR = '#8c2a2a'; // deep muscle crimson
 
+function isMuscleMesh(rawName: string): boolean {
+  const n = (rawName || '').toLowerCase();
+  return (
+    n.includes('muscle') || n.includes('tendon') || n.includes('aponeurosis') ||
+    n.includes('sheath') || n.includes('fascia') || n.includes('ligament') ||
+    n.includes('retinaculum') || n.includes('galea') || n.includes('platysma') ||
+    n.includes('biceps') || n.includes('triceps') || n.includes('deltoid') ||
+    n.includes('pectoral') || n.includes('rectus') || n.includes('oblique') ||
+    n.includes('transversus') || n.includes('intercostal') || n.includes('diaphragm') ||
+    n.includes('latissimus') || n.includes('trapezius') || n.includes('rhomboid') ||
+    n.includes('levator') || n.includes('splenius') || n.includes('scalenus') ||
+    n.includes('masseter') || n.includes('temporalis') || n.includes('pterygoid') ||
+    n.includes('buccinator') || n.includes('bucinator') || n.includes('orbicularis') ||
+    n.includes('zygomaticus') || n.includes('gluteus') || n.includes('piriformis') ||
+    n.includes('obturator') || n.includes('quadriceps') || n.includes('sartorius') ||
+    n.includes('gracilis') || n.includes('pectineus') || n.includes('adductor') ||
+    n.includes('hamstring') || n.includes('semitendinosus') || n.includes('semimembranosus') ||
+    n.includes('gastrocnemius') || n.includes('soleus') || n.includes('popliteus') ||
+    n.includes('plantaris') || n.includes('peroneus') || n.includes('fibularis') ||
+    n.includes('tibialis') || n.includes('extensor') || n.includes('flexor') ||
+    n.includes('abductor') || n.includes('pronator') || n.includes('supinator') ||
+    n.includes('brachialis') || n.includes('coracobrachialis') || n.includes('subscapularis') ||
+    n.includes('supraspinatus') || n.includes('infraspinatus') || n.includes('teres') ||
+    n.includes('serratus') || n.includes('erector') || n.includes('iliocostalis') ||
+    n.includes('longissimus') || n.includes('spinalis') || n.includes('multifidus') ||
+    n.includes('quadratus') || n.includes('psoas') || n.includes('iliacus') ||
+    n.includes('omohyoid') || n.includes('sternocleidomastoid') || n.includes('sternohyoid') ||
+    n.includes('thyrohyoid') || n.includes('mylohyoid') || n.includes('geniohyoid') ||
+    n.includes('digastric') || n.includes('stylohyoid') || n.includes('palpebrae') ||
+    n.includes('tarsus') || n.includes('trochlea') || n.includes('tendinous') ||
+    n.includes('synovial') || n.includes('cruciform') || n.includes('corrugator') ||
+    n.includes('depressor') || n.includes('mentalis') || n.includes('procerus') ||
+    n.includes('risorius') || n.includes('anconeus') || n.includes('palmaris') ||
+    n.includes('lumbrical') || n.includes('interossei') || n.includes('interosseous') ||
+    n.includes('opponens') || n.includes('gemellus') || n.includes('tensor') ||
+    n.includes('scalene') || n.includes('sphincter') || n.includes('perinei')
+  );
+}
+
 function buildBaseMaterial(isExplicitMuscle: boolean): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial(
     isExplicitMuscle
@@ -107,19 +146,7 @@ export const RealAnatomyModel: React.FC = () => {
         mesh.geometry.computeBoundingSphere();
         mesh.raycast = THREE.Mesh.prototype.raycast;
 
-        const name = (mesh.name || '').toLowerCase();
-        const isExplicitMuscle =
-          name.endsWith('muscle') || name.includes(' muscle') ||
-          name.includes('muscle ') || name.includes('muscle.') ||
-          name.includes('rectus')   || name.includes('oblique')  ||
-          name.includes('pectoral') || name.includes('deltoid')  ||
-          name.includes('biceps')   || name.includes('triceps')  ||
-          name.includes('gluteus')  || name.includes('trapezius') ||
-          name.includes('latissimus') || name.includes('gastrocnemius') ||
-          name.includes('soleus')   || name.includes('sartorius') ||
-          name.includes('gracilis') || name.includes('quadriceps') ||
-          name.includes('brachialis') || name.includes('subscapularis') ||
-          name.includes('infraspinatus') || name.includes('supraspinatus');
+        const isExplicitMuscle = activeModel === 'skeleton' ? false : isMuscleMesh(mesh.name);
 
         mesh.userData.isMuscle = isExplicitMuscle;
         const mat = buildBaseMaterial(isExplicitMuscle);

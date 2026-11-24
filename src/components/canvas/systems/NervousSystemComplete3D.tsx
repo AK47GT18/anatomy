@@ -41,8 +41,9 @@ export const NervousSystemComplete3D: React.FC = () => {
 
       const container = new THREE.Group();
       container.add(root);
-      container.scale.setScalar(size.y > 0 ? 0.33 / size.y : 1);
-      container.position.set(0, 1.07, 0.02);
+      // Anatomical cranial vault: floor at 0.95 (sphenoid), roof at 1.19 (parietal/frontal), depth centered at -0.035
+      container.scale.setScalar(size.y > 0 ? 0.30 / size.y : 1);
+      container.position.set(0, 1.045, -0.035);
 
       root.traverse((c) => {
         if ((c as THREE.Mesh).isMesh) {
@@ -66,8 +67,9 @@ export const NervousSystemComplete3D: React.FC = () => {
 
         const container = new THREE.Group();
         container.add(root);
-        container.scale.setScalar(size.y > 0 ? 0.65 / size.y : 1);
-        container.position.set(0, 0.48, -0.045);
+        // Vertebral canal: runs from C1 (0.93) to L2 (0.16) inside the neural arches at Z -0.070
+        container.scale.setScalar(size.y > 0 ? 0.72 / size.y : 1);
+        container.position.set(0, 0.54, -0.070);
 
         root.traverse((c) => {
           if ((c as THREE.Mesh).isMesh) {

@@ -50,8 +50,8 @@ export const ReproductiveSystem3D: React.FC = () => {
       }).catch((e) => console.warn('[ReproductiveSystem3D] Error loading', url, e));
     };
 
-    load('/models/prostate.glb',      0.26, [0, -0.17, 0.09], setMaleScene);
-    setTimeout(() => load('/models/reproductive.glb', 0.26, [0, -0.11, 0.045], setFemaleScene), 80);
+    load('/models/prostate.glb',      0.22, [0, -0.20, 0.055], setMaleScene);
+    setTimeout(() => load('/models/reproductive.glb', 0.22, [0, -0.15, 0.015], setFemaleScene), 80);
 
     return () => { cancelled = true; };
   }, []);

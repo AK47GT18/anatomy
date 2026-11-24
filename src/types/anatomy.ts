@@ -30,6 +30,7 @@ export interface ClinicalSignificance {
 export interface AnatomicalStructure {
   id: string;
   name: string;
+  commonName?: string;
   latinName: string;
   system: AnatomicalSystem;
   subsystem?: string;

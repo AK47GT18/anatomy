@@ -221,6 +221,16 @@ export const LeftPanel: React.FC = () => {
 
         {/* Anatomical Systems Layer Toggles */}
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
+          {/* Performance Advisory Banner */}
+          <div className="mb-2 p-2.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-[11px] text-amber-900 leading-normal">
+            <div className="font-semibold text-amber-800 flex items-center gap-1">
+              <span>⚡ Skeleton Default Mode</span>
+            </div>
+            <p className="text-[10px] text-amber-700 mt-0.5 leading-relaxed">
+              Default is pure skeleton for fast loading. Enabling multiple layers (Muscles, Organs, Vessels, Nerves) renders thousands of 3D meshes and may be a bit slower on mobile or low-power devices.
+            </p>
+          </div>
+
           <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-1 py-1">
             Anatomical Layers
           </div>
